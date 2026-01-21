@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4PL IRT Educational Sandbox</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b', // Custom dark slate
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="sigma" class="w-6 h-6 text-indigo-600"></i>
+                <h1 class="text-xl font-bold font-serif text-slate-900 tracking-tight">IRT Visualizer <span class="text-slate-400 font-sans font-normal text-sm ml-2">4PL Model</span></h1>
+            </div>
+            <a href="https://en.wikipedia.org/wiki/Item_response_theory" target="_blank" class="text-sm text-slate-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                Learn more <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        
+        <!-- Formula Display -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center justify-center min-h-[120px] transition-all hover:shadow-md">
+            <div id="formula-display" class="text-lg md:text-xl overflow-x-auto max-w-full"></div>
+            <p class="mt-3 text-xs text-slate-400 font-mono">Real-time Equation</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Graph Section -->
+            <div class="lg:col-span-8 space-y-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-1 relative overflow-hidden h-[500px] md:h-[600px]">
+                    <div id="plot-container" class="w-full h-full"></div>
+                    <!-- Loading overlay, hidden by default -->
+                    <div id="loading-overlay" class="absolute inset-0 bg-white/80 z-10 flex items-center justify-center hidden">
+                        <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24">
+                    <h2 class="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-5 h-5 text-slate-500"></i> Parameters
+                    </h2>
+                    
+                    <div class="space-y-8">
+                        <!-- Slider A -->
+                        <div class="control-group relative">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="slider-a" class="flex items-center gap-1 text-sm font-medium text-slate-700">
+                                    <span class="w-6 font-serif italic text-indigo-600">a</span> Discrimination
+                                    <div class="group relative ml-1">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-indigo-500 transition-colors"></i>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-xl w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none text-center">
+                                            The Slope. Higher values mean the item is better at distinguishing between students of different abilities.
+                                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <span class="font-mono text-sm text-slate-600 bg-slate-100 px-2 py-0.5 rounded" id="val-a">1.0</span>
+                            </div>
+                            <input type="range" id="slider-a" min="0.1" max="4.0" step="0.1" value="1.0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            <div class="flex justify-between mt-1 text-[10px] text-slate-400 font-mono">
+                                <span>0.1</span>
+                                <span>4.0</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider B -->
+                        <div class="control-group relative">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="slider-b" class="flex items-center gap-1 text-sm font-medium text-slate-700">
+                                    <span class="w-6 font-serif italic text-indigo-600">b</span> Difficulty
+                                    <div class="group relative ml-1">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-indigo-500 transition-colors"></i>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-xl w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none text-center">
+                                            The Location. The ability level where the student has a 50% chance of success (relative to the asymptotes).
+                                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <span class="font-mono text-sm text-slate-600 bg-slate-100 px-2 py-0.5 rounded" id="val-b">0.0</span>
+                            </div>
+                            <input type="range" id="slider-b" min="-3.0" max="3.0" step="0.1" value="0.0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                             <div class="flex justify-between mt-1 text-[10px] text-slate-400 font-mono">
+                                <span>-3.0</span>
+                                <span>3.0</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider C -->
+                        <div class="control-group relative">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="slider-c" class="flex items-center gap-1 text-sm font-medium text-slate-700">
+                                    <span class="w-6 font-serif italic text-indigo-600">c</span> Guessing
+                                    <div class="group relative ml-1">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-indigo-500 transition-colors"></i>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-xl w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none text-center">
+                                            The Floor. The probability a very low-ability student gets the item right (e.g., by guessing).
+                                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <span class="font-mono text-sm text-slate-600 bg-slate-100 px-2 py-0.5 rounded" id="val-c">0.00</span>
+                            </div>
+                            <input type="range" id="slider-c" min="0.0" max="0.5" step="0.01" value="0.0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                             <div class="flex justify-between mt-1 text-[10px] text-slate-400 font-mono">
+                                <span>0.0</span>
+                                <span>0.5</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider D -->
+                        <div class="control-group relative">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="slider-d" class="flex items-center gap-1 text-sm font-medium text-slate-700">
+                                    <span class="w-6 font-serif italic text-indigo-600">d</span> Inattention
+                                    <div class="group relative ml-1">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400 cursor-help hover:text-indigo-500 transition-colors"></i>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-xl w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none text-center">
+                                            The Ceiling. The probability a very high-ability student gets it right (accounts for careless errors).
+                                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <span class="font-mono text-sm text-slate-600 bg-slate-100 px-2 py-0.5 rounded" id="val-d">1.00</span>
+                            </div>
+                            <input type="range" id="slider-d" min="0.5" max="1.0" step="0.01" value="1.0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                             <div class="flex justify-between mt-1 text-[10px] text-slate-400 font-mono">
+                                <span>0.5</span>
+                                <span>1.0</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Reset Button -->
+                    <div class="mt-8 pt-6 border-t border-slate-100">
+                        <button id="reset-btn" class="w-full py-2 px-4 rounded-lg bg-slate-50 text-slate-600 text-sm font-medium hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Parameters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
